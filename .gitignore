@@ -1,0 +1,96 @@
+# Node.js dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Build outputs
+build/
+dist/
+
+# Tailwind generated files
+*.css.map
+*.css
+
+# React
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage files
+coverage/
+
+# IDE and Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python dependencies and cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+Pipfile
+Pipfile.lock
+*.env
+
+# Flask specific
+instance/
+*.sqlite3
+*.db
+
+# Static files
+static/
+media/
+
+# Pytest
+.cache/
+.tox/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.pid
+*.seed
+*.sublime-workspace
+*.sublime-project
+*.pytest_cache/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.nfs*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Python virtual environments
+venv/
+.env/
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+.env.docker

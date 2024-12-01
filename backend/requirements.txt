@@ -1,0 +1,12 @@
+requests
+torch
+numpy
+flask
+gtts
+pydub
+speechrecognition
+python-dotenv
+openai
+whisper
+langchain-openai
+langchain-community
