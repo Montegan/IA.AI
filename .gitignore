@@ -94,3 +94,5 @@ venv/
 *.dockerignore
 docker-compose.override.yml
 .env.docker
+
+firebase_config.js
