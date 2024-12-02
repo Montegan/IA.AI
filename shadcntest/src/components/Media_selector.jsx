@@ -36,6 +36,44 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
     }
   };
 
+  const handleUrlUpload = async () => {
+    if (webUrl != "") {
+      const webResponse = await axios.post(
+        "http://127.0.0.1:5000/load_web",
+        {
+          webUrl: webUrl,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setUploadStatus(webResponse.data.message);
+      webResponse && setWebUrl("");
+    }
+  };
+
+  const handleYoutubeUpload = async () => {
+    if (youtubeUrl != "") {
+      const webResponse = await axios.post(
+        "http://127.0.0.1:5000//load_youtube",
+        {
+          webUrl: youtubeUrl,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setUploadStatus(webResponse.data.message);
+      webResponse && setyoutubeUrl("");
+    }
+  };
+
   return (
     <>
       <div
@@ -54,6 +92,18 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
         >
           X
         </Button>
+        <p
+          className={
+            UploadStatus
+              ? "text-white w-fit transition-transform bg-green-600 p-2"
+              : "hidden"
+          }
+        >
+          {UploadStatus}
+          {setTimeout(() => {
+            setUploadStatus("");
+          }, 2000)}
+        </p>
         <div className="flex items-center justify-center w-full">
           <label
             htmlFor="file_upload"
@@ -83,20 +133,35 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
               }}
             />
           </label>
-          <h1 className="text-white">{UploadStatus && UploadStatus}</h1>
           {file && <Button onClick={handleFileUpload}>Upload</Button>}
         </div>
 
-        <div className=" bg-[#4b4b4b96] text-white flex flex-col gap-2 rounded-md p-2">
+        <div className=" bg-[#4b4b4b96] text-black flex flex-col gap-2 rounded-md p-2">
           <label htmlFor="Youtube">Youtube:</label>
-          <input id="Youtube" type="text" className="w-full p-1 rounded-md" />
-          <Button className="w-fit bg-[#00416B]">Upload</Button>
+          <input
+            id="Youtube"
+            type="text"
+            className="w-full p-1 rounded-md"
+            value={youtubeUrl}
+            onChange={(e) => setyoutubeUrl(e.target.value)}
+          />
+          <Button className="w-fit bg-[#00416B]" onClick={handleYoutubeUpload}>
+            Upload
+          </Button>
         </div>
 
-        <div className=" bg-[#4b4b4b96] flex text-white gap-2 flex-col rounded-md p-2">
+        <div className=" bg-[#4b4b4b96] flex text-black gap-2 flex-col rounded-md p-2">
           <label htmlFor="WebLink">Website:</label>
-          <input id="WebLink" className="w-full p-1 rounded-md" type="text" />
-          <Button className="w-fit bg-[#00416B]">Upload</Button>
+          <input
+            id="WebLink"
+            className="w-full p-1 rounded-md"
+            type="text"
+            value={webUrl}
+            onChange={(e) => setWebUrl(e.target.value)}
+          />
+          <Button className="w-fit bg-[#00416B]" onClick={handleUrlUpload}>
+            Upload
+          </Button>
         </div>
       </div>
     </>

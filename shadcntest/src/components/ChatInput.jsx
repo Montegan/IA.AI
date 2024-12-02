@@ -36,7 +36,7 @@ const ChatInput = ({ currentTab }) => {
     });
 
     const backendMessage = await axios.post(
-      "http://127.0.0.1:5000/chatEndpoint",
+      "http://127.0.0.1:5000/ragEndpoint",
       { prompt: userInput, currentuser: currentuser, currentTab: currentTab },
       {
         headers: {

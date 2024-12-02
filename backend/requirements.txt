@@ -13,3 +13,5 @@ langchain-community
 pypdf
 docarray
 PyAudio
+beautifulsoup4
+youtube-transcript-api
