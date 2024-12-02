@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import axios from "axios";
 const Media_selector = ({ mediaSelector, setMediaSelector }) => {
-  const [Pdfpath, setPdfpath] = useState("");
-  const [PdfPreview, setPdfPreview] = useState("");
+  const [file, setfile] = useState("");
+  const [UploadStatus, setUploadStatus] = useState("");
   const [webUrl, setWebUrl] = useState("");
   const [youtubeUrl, setyoutubeUrl] = useState("");
 
@@ -28,12 +28,10 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
         }
       );
 
-      setUploadStatus(
-        `File uploaded successfully! File path: ${response.data.file_path}`
-      );
+      setUploadStatus(`${response.data.message}`);
     } catch (error) {
       setUploadStatus(
-        `Error: ${error.response ? error.response.data.error : error.message}`
+        `Error:${error.response ? error.response.data.error : error.message}`
       );
     }
   };
@@ -43,7 +41,7 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
       <div
         className={
           mediaSelector
-            ? "bg-[#171717] absolute  p-10  h-full w-full flex flex-col justify-center gap-8"
+            ? "bg-[#2d2d2d] fixed bottom-[10vh] left-[10vw] rounded-md shadow-[0px_0px_500px_150px_#000000] p-10  h-[80vh] w-[80vw] flex flex-col justify-center gap-8"
             : "hidden"
         }
       >
@@ -62,13 +60,13 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
             className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 border-gray-300 hover:bg-gray-100"
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              {Pdfpath ? (
-                Pdfpath.name
+              {file ? (
+                file.name
               ) : (
                 <>
                   <p className="mb-2 text-sm text-gray-500">
                     <span className="font-semibold">Click to upload</span> or
-                    drag and drop{" "}
+                    drag and drop
                   </p>
                   <p className="text-lg text-gray-500">PDF (MAX. 5MB)</p>
                 </>
@@ -80,12 +78,13 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
               type="file"
               className="hidden"
               onChange={(e) => {
-                setPdfpath(e.target.files[0]);
+                setfile(e.target.files[0]);
                 console.log(e.target.files[0]);
               }}
             />
           </label>
-          {Pdfpath && <Button onClick={handleFileUpload}>Upload</Button>}
+          <h1 className="text-white">{UploadStatus && UploadStatus}</h1>
+          {file && <Button onClick={handleFileUpload}>Upload</Button>}
         </div>
 
         <div className=" bg-[#4b4b4b96] text-white flex flex-col gap-2 rounded-md p-2">

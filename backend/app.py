@@ -1,3 +1,7 @@
+from firebase_admin import credentials
+import firebase_admin
+from firebase_admin import firestore
+import datetime
 import os
 import requests
 import torch
@@ -19,6 +23,7 @@ from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.chains import ConversationalRetrievalChain
 import warnings
+from flask_cors import CORS
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -28,10 +33,18 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'supersecretkey'  # For session management
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 
 openai.api_key = OPENAI_API_KEY
+
+# firebase credentials
+cred = credentials.Certificate(
+    "C:\\Users\\H00422003\\Desktop\\SFBU\\2ndsem\\GenAI\\firebase_config_keys.json")
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 # Queues for handling audio and results
 audio_queue = queue.Queue()
@@ -72,7 +85,12 @@ def load_db(file_path, chain_type="stuff", k=4):
 # Function to interact with OpenAI API
 
 
-def ask_chatgpt(prompt):
+@app.route("/chatEndpoint", methods=['POST'])
+def ask_chatgpt():
+    data = request.get_json()  # Parse JSON data
+    prompt = data.get("prompt")  # Extract the "prompt" key
+    currentuser = data.get("currentuser")
+    currentTab = data.get("currentTab")
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {OPENAI_API_KEY}',
@@ -85,12 +103,37 @@ def ask_chatgpt(prompt):
         "temperature": 0.7,
     }
 
+    # const send_ref = collection(
+    #   db,
+    #   "users",
+    #   currentuser,
+    #   "tab_id",
+    #   currentTab,
+    #   "messages"
+    # );
+    # addDoc(send_ref, {
+    #   userId: currentuser,
+    #   human_message: userInput,
+    #   created_at: serverTimestamp(),
+    # });
+
     try:
         response = requests.post(
             'https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        return result['choices'][0]['message']['content'].strip()
+
+        ai_message = result['choices'][0]['message']['content'].strip()
+        send_ref = db.collection("users", currentuser,
+                                 "tab_id", currentTab, "messages").document()
+        data = {
+            "userId": currentuser,
+            "ai_message": ai_message,
+            "created_at": firestore.SERVER_TIMESTAMP,  # type: ignore
+        }
+        send_ref.set(data)
+
+        return send_ref.id
     except requests.exceptions.RequestException as e:
         return f"Error communicating with OpenAI API: {e}"
 
@@ -119,7 +162,7 @@ def transcribe_audio():
     while not audio_queue.empty():
         audio_data = audio_queue.get()
         result = audio_model.transcribe(audio_data, language='english')
-        predicted_text = result["text"].strip()
+        predicted_text = result["text"].strip()  # type: ignore
 
         if verbose:
             print(f"Transcription: {predicted_text}")
@@ -127,11 +170,11 @@ def transcribe_audio():
 
 
 # Flask route for the main page
-@app.route('/')
-def index():
-    if 'chat_history' not in session:
-        session['chat_history'] = []  # Initialize chat history in session
-    return render_template('index.html', chat_history=session['chat_history'])
+# @app.route('/')
+# def index():
+#     if 'chat_history' not in session:
+#         session['chat_history'] = []  # Initialize chat history in session
+#     return render_template('index.html', chat_history=session['chat_history'])
 
 # Flask route to handle PDF upload
 
@@ -155,29 +198,96 @@ def load_document():
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
     try:
+        data = request.get_json()  # Parse JSON data
+        currentuser = data.get("currentuser")
+        currentTab = data.get("currentTab")
         # Record and process audio
         record_audio(audio_queue)
         question = transcribe_audio()
 
-        # Send transcription to ChatGPT using the loaded PDF
-        if not question or not qa:
-            return jsonify({"error": "No valid question or document loaded!"}), 400
+        human_message = question
+        send_ref = db.collection("users", currentuser,
+                                 "tab_id", currentTab, "messages").document()
+        data = {
+            "userId": currentuser,
+            "human_message": human_message,
+            "created_at": firestore.SERVER_TIMESTAMP,  # type: ignore
+        }
+        send_ref.set(data)
 
-        result = qa({"question": question, "chat_history": chat_history})
-        response = result["answer"]
+        respondtoVoice(question, currentuser, currentTab)
 
-        # Convert response to speech
-        tts = gTTS(text=response, lang='en', slow=False)
-        tts.save("response.mp3")  # Save audio file
+        # # Send transcription to ChatGPT using the loaded PDF
+        # if not question or not qa:
+        #     return jsonify({"error": "No valid question or document loaded!"}), 400
 
-        # Update chat history
-        session['chat_history'].append({"user": question, "bot": response})
-        session.modified = True  # Mark session as modified to save changes
+        # result = qa({"question": question, "chat_history": chat_history})
+        # response = result["answer"]
 
-        return jsonify({"transcription": question, "response": response, "chat_history": session['chat_history']})
+        # # Convert response to speech
+        # tts = gTTS(text=response, lang='en', slow=False)
+        # tts.save("response.mp3")  # Save audio file
+
+        # # Update chat history
+        # session['chat_history'].append({"user": question, "bot": response})
+        # session.modified = True  # Mark session as modified to save changes
+
+        # return jsonify({"transcription": question, "response": response, "chat_history": session['chat_history']})
+        return jsonify({"data": question})
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+def respondtoVoice(question, currentuser, currentTab):
+    data = request.get_json()  # Parse JSON data
+    prompt = question  # Extract the "prompt" key
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+    }
+
+    payload = {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 300,
+        "temperature": 0.7,
+    }
+
+    # const send_ref = collection(
+    #   db,
+    #   "users",
+    #   currentuser,
+    #   "tab_id",
+    #   currentTab,
+    #   "messages"
+    # );
+    # addDoc(send_ref, {
+    #   userId: currentuser,
+    #   human_message: userInput,
+    #   created_at: serverTimestamp(),
+    # });
+
+    try:
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        ai_message = result['choices'][0]['message']['content'].strip()
+        send_ref = db.collection("users", currentuser,
+                                 "tab_id", currentTab, "messages").document()
+        data = {
+            "userId": currentuser,
+            "ai_message": ai_message,
+            "created_at": firestore.SERVER_TIMESTAMP,  # type: ignore
+        }
+        send_ref.set(data)
+
+        return send_ref.id
+    except requests.exceptions.RequestException as e:
+        return f"Error communicating with OpenAI API: {e}"
 
 
 if __name__ == "__main__":

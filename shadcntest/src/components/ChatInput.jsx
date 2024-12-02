@@ -12,6 +12,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { BsFillSendFill } from "react-icons/bs";
+import axios from "axios";
 
 const ChatInput = ({ currentTab }) => {
   const [userInput, setUserInput] = useState("");
@@ -33,12 +34,23 @@ const ChatInput = ({ currentTab }) => {
       human_message: userInput,
       created_at: serverTimestamp(),
     });
+
+    const backendMessage = await axios.post(
+      "http://127.0.0.1:5000/chatEndpoint",
+      { prompt: userInput, currentuser: currentuser, currentTab: currentTab },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     console.log("message sent");
+    console.log(backendMessage);
     setUserInput("");
   };
   return (
     <>
-      <form action="" onSubmit={handleSubmit} className="flex w-ful gap-2">
+      <form onSubmit={handleSubmit} className="flex w-ful gap-2">
         <Input
           className="w-[43vw] "
           value={userInput}

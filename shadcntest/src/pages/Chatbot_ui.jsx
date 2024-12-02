@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
 import ChatInput from "@/components/ChatInput.jsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Media_selector from "@/components/Media_selector.jsx";
+import axios from "axios";
 
 const Chatbot_ui = ({ user, loading, error }) => {
   const [messages, setMessages] = useState([]);
@@ -32,6 +33,7 @@ const Chatbot_ui = ({ user, loading, error }) => {
   const [mediaSelector, setMediaSelector] = useState(false);
 
   const navigate = useNavigate();
+  const chatEndRef = useRef(null);
   const handdle_logout = async () => {
     const signed_out = await signOut(auth);
     console.log(user.proactiveRefresh.isRunning);
@@ -84,7 +86,11 @@ const Chatbot_ui = ({ user, loading, error }) => {
       created_at: serverTimestamp(),
     });
     setCurrentTab(q.id);
-    const tabs_query = query(collection_ref, orderBy("created_at"), limit(50));
+    const tabs_query = query(
+      collection_ref,
+      orderBy("created_at", "desc"),
+      limit(50)
+    );
     onSnapshot(tabs_query, (snapshot) => {
       setTabs(snapshot.docs.map((doc) => doc.id));
       console.log(snapshot.docs.map((doc) => doc.id));
@@ -130,6 +136,42 @@ const Chatbot_ui = ({ user, loading, error }) => {
     console.log("attach button clicked");
   };
 
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // Trigger when messages update
+
+  const handleAudio = async () => {
+    const currentuser = auth.currentUser.uid;
+    const backendMessage = await axios.post(
+      "http://127.0.0.1:5000/process_audio",
+      { currentuser: currentuser, currentTab: currentTab },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log(backendMessage.data.data);
+    // const recorded_text = backendMessage.data.data;
+    // const send_ref = collection(
+    //   db,
+    //   "users",
+    //   currentuser,
+    //   "tab_id",
+    //   currentTab,
+    //   "messages"
+    // );
+    // await addDoc(send_ref, {
+    //   userId: currentuser,
+    //   human_message: recorded_text,
+    //   created_at: serverTimestamp(),
+    // });
+  };
+
   return (
     <div className="flex p-0 m-0 ">
       {loading ? (
@@ -155,11 +197,11 @@ const Chatbot_ui = ({ user, loading, error }) => {
                 >
                   <IoMdAddCircle /> New
                 </Button>
-                <div className=" h-[80vh] rounded-full w-[260px] max-w-[260px] flex flex-col gap-2">
+                <div className=" h-[80vh]  w-[260px] overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] max-w-[260px] flex flex-col gap-2">
                   {tabs.map((tab) => (
                     <Button
                       id={tab}
-                      className="max-w-[260px] bg-[#00416B]"
+                      className="max-w-[260px] bg-[#41525e2e] focus:bg-[#26516e] "
                       onClick={(e) => {
                         setCurrentTab(e.target.id);
                         handeActiveTab(e.target.id);
@@ -196,6 +238,7 @@ const Chatbot_ui = ({ user, loading, error }) => {
                     setMediaSelector={setMediaSelector}
                     mediaSelector={mediaSelector}
                   />
+                  <div ref={chatEndRef}></div>
                 </Card>
 
                 {currentTab != "" && (
@@ -208,6 +251,7 @@ const Chatbot_ui = ({ user, loading, error }) => {
                     >
                       <CgAttachment />
                     </Button>
+                    <Button onClick={handleAudio}>Audio</Button>
                     <ChatInput currentTab={currentTab} />
                   </div>
                 )}

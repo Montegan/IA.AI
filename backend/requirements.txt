@@ -10,3 +10,6 @@ openai
 whisper
 langchain-openai
 langchain-community
+pypdf
+docarray
+PyAudio
