@@ -4,6 +4,7 @@ import logo_image from "../assets/SFBU_Logo.png";
 import { Avatar } from "../components/ui/avatar";
 import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
+import { BsChatLeftTextFill } from "react-icons/bs";
 function VoiceChat() {
   const [status, setStatus] = useState("");
   const [clicked, setClicked] = useState(false);
@@ -19,14 +20,14 @@ function VoiceChat() {
   const audio_ref = useRef(null);
   const navigate = useNavigate();
   return (
-    <div className="bg-[#00416B] h-[100vh] flex flex-col justify-start items-center  ">
+    <div className="bg-[#00416B] relative h-[100vh] flex flex-col p-3 justify-start items-center  ">
       <div
-        className="cursor-pointer"
+        className="cursor-pointer absolute mt-5 ml-4 text-[#7d7d7d] self-start"
         onClick={() => {
           navigate("/ChatBot");
         }}
       >
-        text Only
+        <BsChatLeftTextFill size="30" />
       </div>
 
       <h1 className="text-[3rem] font-bold text-[#BC955c] mt-[50px]">

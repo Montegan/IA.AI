@@ -11,6 +11,7 @@ import { BsFillSendFill } from "react-icons/bs";
 import { IoMdAddCircle } from "react-icons/io";
 import { FaMicrophone } from "react-icons/fa";
 import { MdGTranslate } from "react-icons/md";
+import { RiUserVoiceFill } from "react-icons/ri";
 
 import { CiLogout } from "react-icons/ci";
 
@@ -231,14 +232,14 @@ const Chatbot_ui = ({ user, loading, error }) => {
               </Card>
               <Card className=" h-[100vh] w-[80vw] bg-[#212121] flex gap-3 flex-col items-center rounded-none border-none pt-2 ">
                 {currentTab != "" && (
-                  <div className="flex h-[60px] border-b-2 border-opacity-10 border-gray-300 w-[73vw] items-center justify-end  px-2 pb-2 gap-2">
+                  <div className="flex h-[60px] border-b-2 border-opacity-10 border-gray-300 w-[73vw] items-center justify-between  px-2 pb-2 gap-2">
                     <div
                       className="cursor-pointer"
                       onClick={() => {
                         navigate("/voiceBot");
                       }}
                     >
-                      VOice only
+                      <RiUserVoiceFill size="30" className="text-[#afafaf]" />
                     </div>
                     <div className=" p-1  w-[250px] flex items-center ">
                       <label htmlFor="language">

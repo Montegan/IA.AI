@@ -136,7 +136,7 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
           {file && <Button onClick={handleFileUpload}>Upload</Button>}
         </div>
 
-        <div className=" bg-[#4b4b4b96] text-black flex flex-col gap-2 rounded-md p-2">
+        <div className=" bg-[#4b4b4b96] text-white flex flex-col gap-2 rounded-md p-2">
           <label htmlFor="Youtube">Youtube:</label>
           <input
             id="Youtube"
@@ -150,7 +150,7 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
           </Button>
         </div>
 
-        <div className=" bg-[#4b4b4b96] flex text-black gap-2 flex-col rounded-md p-2">
+        <div className=" bg-[#4b4b4b96] flex text-white gap-2 flex-col rounded-md p-2">
           <label htmlFor="WebLink">Website:</label>
           <input
             id="WebLink"
