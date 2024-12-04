@@ -14,7 +14,7 @@ import {
 import { BsFillSendFill } from "react-icons/bs";
 import axios from "axios";
 
-const ChatInput = ({ currentTab }) => {
+const ChatInput = ({ currentTab, language }) => {
   const [userInput, setUserInput] = useState("");
 
   const handleSubmit = async (e) => {
@@ -37,7 +37,12 @@ const ChatInput = ({ currentTab }) => {
 
     const backendMessage = await axios.post(
       "http://127.0.0.1:5000/ragEndpoint",
-      { prompt: userInput, currentuser: currentuser, currentTab: currentTab },
+      {
+        prompt: userInput,
+        currentuser: currentuser,
+        currentTab: currentTab,
+        language: language,
+      },
       {
         headers: {
           "Content-Type": "application/json",
@@ -56,8 +61,12 @@ const ChatInput = ({ currentTab }) => {
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
         />
-        <Button type="Submit" className="bg-[#00416B] ">
-          <BsFillSendFill />
+
+        <Button
+          type="Submit"
+          className=" bg-[#00406b98] hover:bg-[#00416B] w-[100px] text-white "
+        >
+          <BsFillSendFill className="text-[1.5rem]" />
         </Button>
       </form>
     </>

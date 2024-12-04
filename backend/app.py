@@ -16,6 +16,7 @@ import speech_recognition as sr
 from dotenv import load_dotenv
 import whisper
 import openai
+from operator import itemgetter
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -23,7 +24,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 import warnings
 from flask_cors import CORS
-
+from openai_assistant import voice_main
 from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -92,7 +93,8 @@ def ask_chatgpt():
     question = data.get("prompt")  # Extract the "prompt" key
     currentuser = data.get("currentuser")
     currentTab = data.get("currentTab")
-    message = rag_endpoint(question, currentuser, currentTab)
+    language = data.get("language")
+    message = rag_endpoint(question, currentuser, currentTab, language)
     return jsonify({"message": message})
     # data = request.get_json()  # Parse JSON data
     # prompt = data.get("prompt")  # Extract the "prompt" key
@@ -145,9 +147,10 @@ def ask_chatgpt():
     #     return f"Error communicating with OpenAI API: {e}"
 
 
-def rag_endpoint(question, currentuser, currentTab):
+def rag_endpoint(question, currentuser, currentTab, language):
+    print(language)
     try:
-        system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
+        system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. give detailed answer.If you don't know the answer,just say you don't know in a respectfull manner. The answer should be in language :{language}. 
 Context: {context}
 Answer:"""
 
@@ -155,15 +158,16 @@ Answer:"""
             [("system", system_prompt), ("user", "{question}")])
         retriver = vector_store.as_retriever(search_kwargs={"k": 4})
         string_parser = StrOutputParser()
-        retrivalChain = {"context": retriver,
-                         "question": RunnablePassthrough()}
 
-        main_chain = retrivalChain | main_prompt | llm | string_parser
+        main_chain = {"context": itemgetter("question") | retriver,
+                      "question": itemgetter("question"), "language": itemgetter("language")} | main_prompt | llm
 
-        answer = main_chain.invoke(question)
+        answer = main_chain.invoke(
+            {"question": question, "language": language})
 
-        # ai_message = result['choices'][0]['message']['content'].strip()
-        ai_message = answer
+        ai_message = answer.content
+        # ['choices'][0]['message']['content'].strip()
+        # ai_message = answer
         send_ref = db.collection("users", currentuser,
                                  "tab_id", currentTab, "messages").document()
         data = {
@@ -255,6 +259,8 @@ def process_audio():
         data = request.get_json()  # Parse JSON data
         currentuser = data.get("currentuser")
         currentTab = data.get("currentTab")
+        language = "English"
+
         # Record and process audio
         record_audio(audio_queue)
         question = transcribe_audio()
@@ -269,7 +275,7 @@ def process_audio():
         }
         send_ref.set(data)
 
-        rag_endpoint(question, currentuser, currentTab)
+        rag_endpoint(question, currentuser, currentTab, language)
 
         # # Send transcription to ChatGPT using the loaded PDF
         # if not question or not qa:
@@ -291,6 +297,14 @@ def process_audio():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/vtv', methods=['POST'])
+def voice_to_voice():
+    items = request.get_json()
+    clicked = items.get("clicked")
+    voice_main(clicked)
+    return jsonify({"Message": "Voice activated"})
 
 
 if __name__ == "__main__":

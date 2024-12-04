@@ -5,6 +5,7 @@ import { signInWithPopup, signOut } from "firebase/auth";
 import { Button } from "./ui/button";
 import bg_image from "../assets/ai_head.webp";
 import { FcGoogle } from "react-icons/fc";
+import Loading from "./Loading";
 
 const Homepage = ({ user, loading, error }) => {
   const navigate = useNavigate();
@@ -25,10 +26,10 @@ const Homepage = ({ user, loading, error }) => {
   return (
     <>
       {loading ? (
-        <h1>Loading</h1>
+        <Loading />
       ) : (
         <div className="h-[100vh] w-[100vw] display flex items-center   justify-center bg-gradient-to-r from-[#2b272f] to-[#161d15]">
-          <div className="h-[85vh] w-[42vw] object-contain bg-slate-400 rounded-tl-2xl rounded-bl-2xl">
+          <div className="h-[85vh] w-[42vw] object-contain bg-[#2b272f] rounded-tl-2xl rounded-bl-2xl">
             <img
               src={bg_image}
               className=" h-full w-full rounded-tl-2xl rounded-bl-2xl"
