@@ -6,6 +6,7 @@ import Chatbot_ui from "./pages/Chatbot_ui";
 import { auth } from "./firebase_config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import VoiceChat from "./pages/VoiceChat";
+import EmailService from "./pages/EmailService";
 
 function App() {
   const [user, loading, error] = useAuthState(auth);
@@ -24,6 +25,7 @@ function App() {
         path="/voiceBot"
         element={<VoiceChat user={user} loading={loading} error={error} />}
       />
+      <Route path="/emailBot" element={<EmailService />} />
     </Routes>
   );
 }

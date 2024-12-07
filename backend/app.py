@@ -1,3 +1,4 @@
+from flask_mail import Mail, Message
 from firebase_admin import credentials
 import firebase_admin
 from firebase_admin import firestore
@@ -17,13 +18,13 @@ from dotenv import load_dotenv
 import whisper
 import openai
 from operator import itemgetter
-
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 import warnings
 from flask_cors import CORS
+from email_service import compose_email
 from openai_assistant import voice_main
 from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store
 
@@ -33,6 +34,15 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # Load API key from .env file
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+appMAIL_SERVER = os.getenv("appMAIL_SERVER")
+appMAIL_USE_TLS = os.getenv("appMAIL_USE_TLS")
+appMAIL_USE_SSL = os.getenv("appMAIL_USE_SSL")
+appMAIL_PORT = os.getenv("appMAIL_PORT")
+appMAIL_USERNAME = os.getenv("appMAIL_USERNAME")
+appMAIL_PASSWORD = os.getenv("appMAIL_PASSWORD")
+appMAIL_DEFAULT_SENDER = os.getenv("appMAIL_DEFAULT_SENDER")
+certificates = os.getenv("certificates")
+
 llm = ChatOpenAI()
 app = Flask(__name__)
 CORS(app)
@@ -42,8 +52,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 openai.api_key = OPENAI_API_KEY
 
 # firebase credentials
-cred = credentials.Certificate(
-    "C:\\Users\\H00422003\\Desktop\\SFBU\\2ndsem\\GenAI\\firebase_config_keys.json")
+cred = credentials.Certificate(certificates)
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -59,6 +68,23 @@ qa = None  # Initialized after document is loaded
 
 # Load Whisper model
 audio_model = whisper.load_model("base")
+
+# Configuration for Flask-Mail
+app.config['MAIL_SERVER'] = appMAIL_SERVER
+app.config['MAIL_PORT'] = appMAIL_PORT
+app.config['MAIL_USE_TLS'] = appMAIL_USE_TLS
+app.config['MAIL_USE_SSL'] = appMAIL_USE_SSL
+# Replace with your email
+app.config['MAIL_USERNAME'] = appMAIL_USERNAME
+# Replace with your app password
+app.config['MAIL_PASSWORD'] = appMAIL_PASSWORD
+# Replace with your email
+app.config['MAIL_DEFAULT_SENDER'] = appMAIL_DEFAULT_SENDER
+
+
+# Initialize Flask-Mail
+mail = Mail(app)
+
 
 # Function to load and process the PDF document
 
@@ -221,6 +247,37 @@ def load_youtube():
     stringlink = str(weblink)
     message = youtube_embed_documents(stringlink)
     return jsonify({"message": message})
+
+
+# Email Endpoint
+@app.route('/composeEmail', methods=['POST'])
+def create_email():
+    data = request.get_json()
+    draft = data.get('comment')
+    language = data.get('language')
+    email = compose_email(draft, language)
+    return (jsonify(email))
+
+
+# Send email to user
+@app.route('/sendmail', methods=['POST'])
+def send_email():
+    # Get form data
+    # recipient = request.form['recipient']
+    # subject = create_subject(subject)
+    # message = request.form['message']
+    data = request.get_json()
+    final_email = data.get('final_email')
+    subject = data.get('subject')
+    if not subject:
+        subject = "Email from SFBU"
+    try:
+        msg = Message(subject=subject, recipients=[
+                      "fasilsimon8@gmail.com"], body=final_email)
+        mail.send(msg)
+        return "Email sent successfully!"
+    except Exception as e:
+        return str(e)
 
 
 # Audio recording function

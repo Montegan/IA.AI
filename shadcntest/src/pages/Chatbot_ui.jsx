@@ -239,11 +239,14 @@ const Chatbot_ui = ({ user, loading, error }) => {
                         navigate("/voiceBot");
                       }}
                     >
-                      <RiUserVoiceFill size="30" className="text-[#afafaf]" />
+                      <RiUserVoiceFill
+                        size="30"
+                        className="text-[#afafaf] hover:text-[#fffefe]"
+                      />
                     </div>
                     <div className=" p-1  w-[250px] flex items-center ">
                       <label htmlFor="language">
-                        <MdGTranslate className="text-gray-100 text-[2rem] opacity-40" />
+                        <MdGTranslate className="text-gray-100 text-[2rem] hover:text-[#fffefe] opacity-40" />
                       </label>
                       <select
                         name="language"
