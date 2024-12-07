@@ -35,13 +35,14 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 appMAIL_SERVER = os.getenv("appMAIL_SERVER")
+appMAIL_PORT = int(os.getenv("appMAIL_PORT"))  # type: ignore
 appMAIL_USE_TLS = os.getenv("appMAIL_USE_TLS")
 appMAIL_USE_SSL = os.getenv("appMAIL_USE_SSL")
-appMAIL_PORT = os.getenv("appMAIL_PORT")
 appMAIL_USERNAME = os.getenv("appMAIL_USERNAME")
 appMAIL_PASSWORD = os.getenv("appMAIL_PASSWORD")
 appMAIL_DEFAULT_SENDER = os.getenv("appMAIL_DEFAULT_SENDER")
 certificates = os.getenv("certificates")
+
 
 llm = ChatOpenAI()
 app = Flask(__name__)
@@ -73,7 +74,7 @@ audio_model = whisper.load_model("base")
 app.config['MAIL_SERVER'] = appMAIL_SERVER
 app.config['MAIL_PORT'] = appMAIL_PORT
 app.config['MAIL_USE_TLS'] = appMAIL_USE_TLS
-app.config['MAIL_USE_SSL'] = appMAIL_USE_SSL
+# app.config['MAIL_USE_SSL'] = appMAIL_USE_SSL
 # Replace with your email
 app.config['MAIL_USERNAME'] = appMAIL_USERNAME
 # Replace with your app password
@@ -260,27 +261,52 @@ def create_email():
 
 
 # Send email to user
+
+
+# @app.route('/sendmail', methods=['POST'])
+# def send_email():
+#     # Get form data
+#     # recipient = request.form['recipient']
+#     # subject = create_subject(subject)
+#     # message = request.form['message']
+#     data = request.get_json()
+#     final_email = data.get('final_email')
+#     subject = data.get('subject')
+#     if not subject:
+#         subject = "Email from SFBU"
+#     try:
+#         msg = Message(subject=subject, recipients=[
+#                       "fasilsimon8@gmail.com"], body=final_email)
+#         mail.send(msg)
+#         return "Email sent successfully!"
+#     except Exception as e:
+#         return str(e)
+
+
 @app.route('/sendmail', methods=['POST'])
 def send_email():
-    # Get form data
-    # recipient = request.form['recipient']
-    # subject = create_subject(subject)
-    # message = request.form['message']
-    data = request.get_json()
-    final_email = data.get('final_email')
-    subject = data.get('subject')
-    if not subject:
-        subject = "Email from SFBU"
+    data = request.get_json()  # Get the JSON payload
+    final_email = data.get('final_email')  # Extract the email body
+    # Extract the subject
+    mail_subject = data.get('subject').strip()
+
+    if not mail_subject:  # Fallback subject if none is provided
+        mail_subject = "Email from SFBU"
     try:
-        msg = Message(subject=subject, recipients=[
-                      "fasilsimon8@gmail.com"], body=final_email)
-        mail.send(msg)
+        # print(f"{mail_subject}, Email Content: {
+        #       final_email}")  # Debugging logs
+        msg = Message(subject=mail_subject,  # Use the subject received from ChatGPT
+                      # Replace with dynamic or fixed recipient
+                      recipients=["fasilsimon8@gmail.com"],
+                      body=final_email)
+        mail.send(msg)  # Send the email
         return "Email sent successfully!"
     except Exception as e:
-        return str(e)
-
+        return str(e)  # Return the exception message for debugging
 
 # Audio recording function
+
+
 def record_audio(audio_queue, energy=300, pause=0.8, dynamic_energy=False):
     r = sr.Recognizer()
     r.energy_threshold = energy

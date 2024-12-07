@@ -40,7 +40,7 @@ Best regards,"""
 
 def create_subject(draft):
     subject_prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a helpful AI assistant for San Francisco Bay University employees that creates a potential subject for an email based on the draft provided."),
+        ("system", "You are expert in email subject writing. your job is to create a potential subject for an email based on the draft provided for San Francisco Bay University employees . the output should be only the subject no additional label is needed"),
         ("user", "{draft}")])
 
     subject_chain = subject_prompt | client | stringparser
@@ -86,5 +86,5 @@ def summarize_summary(draft):
     # return summary_response
 
 
-answer = compose_email("hello what is happening in eritrea", "english")
-print(answer)
+# answer = compose_email("hello what is happening in eritrea", "english")
+# print(answer)

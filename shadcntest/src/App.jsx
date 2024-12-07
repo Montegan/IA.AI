@@ -20,7 +20,6 @@ function App() {
         path="/ChatBot"
         element={<Chatbot_ui user={user} loading={loading} error={error} />}
       />
-
       <Route
         path="/voiceBot"
         element={<VoiceChat user={user} loading={loading} error={error} />}
