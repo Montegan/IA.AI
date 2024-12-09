@@ -26,8 +26,8 @@ import warnings
 from flask_cors import CORS
 from email_service import compose_email
 from openai_assistant import voice_main
-from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store
-
+from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, powerpoint_embed_documets, excel_embed_documents, csv_embed_documents, text_embed_documents
+import magic
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -217,17 +217,71 @@ Answer:"""
 
 
 # Flask route to handle PDF upload
+# @app.route('/load_db', methods=['POST'])
+# def load_document(pdf_doc):
+#     file = pdf_doc
+#     print(file)
+#     if file:
+#         # Ensure the uploads directory exists
+#         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp.pdf')
+#         file.save(file_path)
+#         print(file_path)
+#         message = pdf_embed_documents(file_path)
+#         return jsonify({"message": message})
+#     return jsonify({"error": "No file uploaded!"}), 400
+
+
+# def upload_file():
+#     if 'file' not in request.files:
+#         return "No file uploaded", 400
+
+#     file = request.files['file']
+#     file_data = file.read()  # Read file content
+
+#     # Detect MIME type
+#     mime = magic.Magic(mime=True)
+#     file_type = mime.from_buffer(file_data)
+#     print(file_type)
+
 @app.route('/load_db', methods=['POST'])
 def load_document():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded!"}), 400
+
     file = request.files['file']
-    if file:
-        # Ensure the uploads directory exists
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp.pdf')
-        file.save(file_path)
-        message = pdf_embed_documents(file_path)
-        return jsonify({"message": message})
-    return jsonify({"error": "No file uploaded!"}), 400
+    if not file.filename:
+        return jsonify({"error": "No file selected!"}), 400
+
+    # Save file temporarily
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(file_path)
+
+    # Detect MIME type using magic
+    mime = magic.Magic(mime=True)
+    with open(file_path, 'rb') as f:
+        file_type = mime.from_buffer(f.read())
+        print(file_type)
+
+    # Check file type and process accordingly
+    if 'pdf' in file_type:
+        message = pdf_embed_documents(file_path)  # Process PDF file
+        return jsonify({"message": f"PDF detected. {message}"}), 200
+    elif 'msword' in file_type or 'officedocument.wordprocessingml' in file_type:
+        message = docs_embed_documents(file_path)
+        return jsonify({"message": f"{message}"}), 200
+    elif 'officedocument.spreadsheetml' in file_type:
+        message = excel_embed_documents(file_path)
+        return jsonify({"message": f"{message}"}), 200
+    elif 'officedocument.presentationml' in file_type:
+        message = powerpoint_embed_documets(file_path)
+        return jsonify({"message": f"{message}"}), 200
+    elif 'csv' in file_type or 'text/plain' in file_type:
+        message = csv_embed_documents(file_path)
+        return jsonify({"message": f"{message}"}), 200
+    else:
+        return jsonify({"message": "Unsupported file type!"}), 400
 
 
 # Flask route to handle web upload
@@ -289,6 +343,8 @@ def send_email():
     final_email = data.get('final_email')  # Extract the email body
     # Extract the subject
     mail_subject = data.get('subject').strip()
+    reciever_address = data.get('reciver').strip()
+    print(reciever_address)
 
     if not mail_subject:  # Fallback subject if none is provided
         mail_subject = "Email from SFBU"
@@ -297,7 +353,7 @@ def send_email():
         #       final_email}")  # Debugging logs
         msg = Message(subject=mail_subject,  # Use the subject received from ChatGPT
                       # Replace with dynamic or fixed recipient
-                      recipients=["fasilsimon8@gmail.com"],
+                      recipients=[reciever_address],
                       body=final_email)
         mail.send(msg)  # Send the email
         return "Email sent successfully!"

@@ -13,6 +13,8 @@ import { FaMicrophone } from "react-icons/fa";
 import { MdGTranslate } from "react-icons/md";
 import { RiUserVoiceFill } from "react-icons/ri";
 
+import { MdEmail } from "react-icons/md";
+import { FaPodcast } from "react-icons/fa6";
 import { CiLogout } from "react-icons/ci";
 
 import {
@@ -195,7 +197,7 @@ const Chatbot_ui = ({ user, loading, error }) => {
               <Card className=" h-[100vh] relative w-[20vw] max-w-[20vw] bg-[#171717] rounded-none items-center border-none overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] flex flex-col gap-2">
                 <div className="flex w-[20vw] max-w-[20vw] items-center p-2  border-b-[1px] mb-2 gap-3">
                   <Avatar>
-                    <AvatarImage src={user.photoURL} alt="profile" />
+                    <AvatarImage src={user?.photoURL} alt="profile" />
                     <AvatarFallback>Profile</AvatarFallback>
                   </Avatar>
                   <h1 className="text-white p-3">{user && user.displayName}</h1>
@@ -231,103 +233,112 @@ const Chatbot_ui = ({ user, loading, error }) => {
                 </Button>
               </Card>
               <Card className=" h-[100vh] w-[80vw] bg-[#212121] flex gap-3 flex-col items-center rounded-none border-none pt-2 ">
-                {currentTab != "" && (
-                  <div className="flex h-[60px] border-b-2 border-opacity-10 border-gray-300 w-[73vw] items-center justify-between  px-2 pb-2 gap-2">
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => {
-                        navigate("/voiceBot");
+                <div className="flex h-[60px] border-b-2 border-opacity-10 border-gray-300 w-[73vw] items-center justify-between  px-2 pb-2 gap-2">
+                  <div className="relative min-h-[35px] flex gap-16 items-center w-full">
+                    <MdEmail
+                      className="text-[#b0b0b0] hover:text-[#d4d4d4]"
+                      size={23}
+                      onClick={() => navigate("/emailbot")}
+                    />
+                    <RiUserVoiceFill
+                      className="text-[#b0b0b0] hover:text-[#d4d4d4]"
+                      size={23}
+                      onClick={() => navigate("/voiceBot")}
+                    />
+                    <FaPodcast
+                      className="text-[#b0b0b0] hover:text-[#d4d4d4]"
+                      size={23}
+                      onClick={() => navigate("/podcast")}
+                    />
+                  </div>
+                  <div
+                    className={
+                      currentTab !== ""
+                        ? " p-1  w-[250px] flex items-center "
+                        : "hidden"
+                    }
+                  >
+                    <label htmlFor="language">
+                      <MdGTranslate className="text-gray-100 text-[2rem] hover:text-[#fffefe] opacity-40" />
+                    </label>
+                    <select
+                      name="language"
+                      id="language"
+                      className="rounded-lg focus:outline-none ml-3 bg-slate-300   text-black p-1 w-[10vw]"
+                      value={language}
+                      onChange={(e) => {
+                        setLanguage(e.target.value);
+                        console.log(e.target.value);
                       }}
                     >
-                      <RiUserVoiceFill
-                        size="30"
-                        className="text-[#afafaf] hover:text-[#fffefe]"
-                      />
-                    </div>
-                    <div className=" p-1  w-[250px] flex items-center ">
-                      <label htmlFor="language">
-                        <MdGTranslate className="text-gray-100 text-[2rem] hover:text-[#fffefe] opacity-40" />
-                      </label>
-                      <select
-                        name="language"
-                        id="language"
-                        className="rounded-lg focus:outline-none ml-3 bg-slate-300   text-black p-1 w-[10vw]"
-                        value={language}
-                        onChange={(e) => {
-                          setLanguage(e.target.value);
-                          console.log(e.target.value);
-                        }}
-                      >
-                        <option value="English">English</option>
-                        <option value="Spanish">Spanish</option>
-                        <option value="Chinese">Chinese</option>
-                        <option value="Tagalog">Tagalog</option>
-                        <option value="Vietnamese">Vietnamese</option>
-                        <option value="Arabic">Arabic</option>
-                        <option value="French">French</option>
-                        <option value="Albanian">Albanian</option>
-                        <option value="Armenian">Armenian</option>
-                        <option value="Azerbaijani">Azerbaijani</option>
-                        <option value="Belarusian">Belarusian</option>
-                        <option value="Bengali">Bengali</option>
-                        <option value="Bosnian">Bosnian</option>
-                        <option value="Brazilian Portuguese">
-                          Brazilian Portuguese
-                        </option>
-                        <option value="Bulgarian">Bulgarian</option>
-                        <option value="Catalan">Catalan</option>
-                        <option value="Croatian">Croatian</option>
-                        <option value="Czech">Czech</option>
-                        <option value="Danish">Danish</option>
-                        <option value="Dutch">Dutch</option>
-                        <option value="Estonian">Estonian</option>
-                        <option value="Finnish">Finnish</option>
-                        <option value="Galician">Galician</option>
-                        <option value="Georgian">Georgian</option>
-                        <option value="German">German</option>
-                        <option value="Greek">Greek</option>
-                        <option value="Gujarati">Gujarati</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Hungarian">Hungarian</option>
-                        <option value="Indonesian">Indonesian</option>
-                        <option value="Irish">Irish</option>
-                        <option value="Italian">Italian</option>
-                        <option value="Japanese">Japanese</option>
-                        <option value="Korean">Korean</option>
-                        <option value="Latvian">Latvian</option>
-                        <option value="Lithuanian">Lithuanian</option>
-                        <option value="Macedonian">Macedonian</option>
-                        <option value="Malay">Malay</option>
-                        <option value="Maltese">Maltese</option>
-                        <option value="Mandarin Chinese">
-                          Mandarin Chinese
-                        </option>
-                        <option value="Marathi">Marathi</option>
-                        <option value="Moldovan">Moldovan</option>
-                        <option value="Mongolian">Mongolian</option>
-                        <option value="Montenegrin">Montenegrin</option>
-                        <option value="Nepali">Nepali</option>
-                        <option value="Norwegian">Norwegian</option>
-                        <option value="Pashto">Pashto</option>
-                        <option value="Persian (Farsi)">Persian (Farsi)</option>
-                        <option value="Polish">Polish</option>
-                        <option value="Portuguese">Portuguese</option>
-                        <option value="Punjabi">Punjabi</option>
-                        <option value="Romanian">Romanian</option>
-                        <option value="Russian">Russian</option>
-                        <option value="Serbian">Serbian</option>
-                        <option value="Sinhala">Sinhala</option>
-                        <option value="Slovak">Slovak</option>
-                        <option value="Slovene">Slovene</option>
-                        <option value="Ukrainian">Ukrainian</option>
-                        <option value="Urdu">Urdu</option>
-                        <option value="Uzbek">Uzbek</option>
-                        <option value="Vietnamese">Vietnamese</option>
-                        <option value="Welsh">Welsh</option>
-                      </select>
-                    </div>
+                      <option value="English">English</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="Chinese">Chinese</option>
+                      <option value="Tagalog">Tagalog</option>
+                      <option value="Vietnamese">Vietnamese</option>
+                      <option value="Arabic">Arabic</option>
+                      <option value="French">French</option>
+                      <option value="Albanian">Albanian</option>
+                      <option value="Armenian">Armenian</option>
+                      <option value="Azerbaijani">Azerbaijani</option>
+                      <option value="Belarusian">Belarusian</option>
+                      <option value="Bengali">Bengali</option>
+                      <option value="Bosnian">Bosnian</option>
+                      <option value="Brazilian Portuguese">
+                        Brazilian Portuguese
+                      </option>
+                      <option value="Bulgarian">Bulgarian</option>
+                      <option value="Catalan">Catalan</option>
+                      <option value="Croatian">Croatian</option>
+                      <option value="Czech">Czech</option>
+                      <option value="Danish">Danish</option>
+                      <option value="Dutch">Dutch</option>
+                      <option value="Estonian">Estonian</option>
+                      <option value="Finnish">Finnish</option>
+                      <option value="Galician">Galician</option>
+                      <option value="Georgian">Georgian</option>
+                      <option value="German">German</option>
+                      <option value="Greek">Greek</option>
+                      <option value="Gujarati">Gujarati</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Hungarian">Hungarian</option>
+                      <option value="Indonesian">Indonesian</option>
+                      <option value="Irish">Irish</option>
+                      <option value="Italian">Italian</option>
+                      <option value="Japanese">Japanese</option>
+                      <option value="Korean">Korean</option>
+                      <option value="Latvian">Latvian</option>
+                      <option value="Lithuanian">Lithuanian</option>
+                      <option value="Macedonian">Macedonian</option>
+                      <option value="Malay">Malay</option>
+                      <option value="Maltese">Maltese</option>
+                      <option value="Mandarin Chinese">Mandarin Chinese</option>
+                      <option value="Marathi">Marathi</option>
+                      <option value="Moldovan">Moldovan</option>
+                      <option value="Mongolian">Mongolian</option>
+                      <option value="Montenegrin">Montenegrin</option>
+                      <option value="Nepali">Nepali</option>
+                      <option value="Norwegian">Norwegian</option>
+                      <option value="Pashto">Pashto</option>
+                      <option value="Persian (Farsi)">Persian (Farsi)</option>
+                      <option value="Polish">Polish</option>
+                      <option value="Portuguese">Portuguese</option>
+                      <option value="Punjabi">Punjabi</option>
+                      <option value="Romanian">Romanian</option>
+                      <option value="Russian">Russian</option>
+                      <option value="Serbian">Serbian</option>
+                      <option value="Sinhala">Sinhala</option>
+                      <option value="Slovak">Slovak</option>
+                      <option value="Slovene">Slovene</option>
+                      <option value="Ukrainian">Ukrainian</option>
+                      <option value="Urdu">Urdu</option>
+                      <option value="Uzbek">Uzbek</option>
+                      <option value="Vietnamese">Vietnamese</option>
+                      <option value="Welsh">Welsh</option>
+                    </select>
                   </div>
-                )}
+                </div>
+
                 <Card className="relative h-[90vh] w-[73vw] overflow-y-scroll overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] rounded-none flex flex-col   gap-10 bg-[#212121] border-none">
                   {tabs.length > 0 && currentTab != "" ? (
                     messages.map((items) => <Message_load items={items} />)

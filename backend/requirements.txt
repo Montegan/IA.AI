@@ -15,3 +15,8 @@ docarray
 PyAudio
 beautifulsoup4
 youtube-transcript-api
+python-magic
+python-pptx
+unstructured
+python-docx
+pandas

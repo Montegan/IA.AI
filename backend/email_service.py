@@ -1,11 +1,14 @@
 from dotenv import load_dotenv
-from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from openai import OpenAI
 
 load_dotenv()
 
-client = OpenAI()
+llm = OpenAI()
+client = ChatOpenAI()
+
 
 stringparser = StrOutputParser()
 
@@ -21,12 +24,16 @@ I would also like to commend the professionalism and hospitality of the entire i
 Overall, my experience during the interview was very positive and I am excited about the potential opportunity to join your team. I look forward to hearing back from you soon.
 Thank you again for your time and consideration.
 Best regards,"""
-    mail_prompt = ChatPromptTemplate.from_messages(
-        [("system", system_prompt), ("user", "hi simon how was your interview can you tell me a little about it."), ("assistant", assistant_response), ("user", draft)])
-    email_chain = mail_prompt | client | stringparser
+    # mail_prompt = ChatPromptTemplate.from_messages(
+    #     [("system", system_prompt), ("user", "hi simon how was your interview can you tell me a little about it."), ("assistant", assistant_response), ("user", draft)])
+    # email_chain = mail_prompt | client | stringparser
 
-    final_email = email_chain.invoke(
-        {"draft": draft, "language": language, "sentiment": sentiment, "subject": subject})
+    email = llm.chat.completions.create(model="gpt-4o-mini", messages=[
+        {"role": "system", "content": f""" You are a helpfull Ai assistant for san francisco bay university emplyee's that composes an email based on the below draft which is delimited by triple backticks and the subject provided below delimitted by dollar sign and the sentiment of the draft delimitted by hastags. draft:'''{summary}''', subject:${subject}$ , sentiment: #{sentiment}# and the output should be in the provided language below language :$${language}$$, do not include the subject in the output and do not include the footer."""
+         }])
+    final_email = email.choices[0].message.content
+    # final_email = email_chain.invoke(
+    #     {"draft": draft, "language": language, "sentiment": sentiment, "subject": subject})
     return {"email": final_email, "summary": summary, "sentiment": sentiment, "subject": subject}
 
 # return {"email": final_email, "summary": summary, "sentiment": sentiment, "subject": subject}
@@ -40,7 +47,7 @@ Best regards,"""
 
 def create_subject(draft):
     subject_prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are expert in email subject writing. your job is to create a potential subject for an email based on the draft provided for San Francisco Bay University employees . the output should be only the subject no additional label is needed"),
+        ("system", "You are expert in email subject writing. your job is to create a potential subject for an email based on the draft provided for San Francisco Bay University employees . do not include the word subject in the beginning of the subject field "),
         ("user", "{draft}")])
 
     subject_chain = subject_prompt | client | stringparser
@@ -50,6 +57,7 @@ def create_subject(draft):
 # response = client.chat.completions.create(model="gpt-4o-mini", messages=[
 #                                               {"role": "system", "content": "You are a helpfull ai Assistant for san francisco bay university emplyee's that creates a potential subject for an email based on the darft provided by the user"}, {"role": "user", "content": f"{draft}"}])
 #     email_subject = response.choices[0].message.content
+#  output should be only the subject no additional label is needed
 
 
 def get_sentiment(draft):

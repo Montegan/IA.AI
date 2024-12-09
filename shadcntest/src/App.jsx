@@ -7,6 +7,7 @@ import { auth } from "./firebase_config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import VoiceChat from "./pages/VoiceChat";
 import EmailService from "./pages/EmailService";
+import Podcast from "./pages/Podcast";
 
 function App() {
   const [user, loading, error] = useAuthState(auth);
@@ -23,6 +24,12 @@ function App() {
       <Route
         path="/voiceBot"
         element={<VoiceChat user={user} loading={loading} error={error} />}
+      />
+      <Route path="/emailBot" element={<EmailService />} />
+
+      <Route
+        path="/podcast"
+        element={<Podcast user={user} loading={loading} error={error} />}
       />
       <Route path="/emailBot" element={<EmailService />} />
     </Routes>

@@ -1,0 +1,6 @@
+DocumentID,Title,Author,Category,UploadDate,FilePath
+1,ProjectProposal,John Doe,Proposal,2024-12-01,files/proposal.docx
+2,ResearchPaper,Jane Smith,Research,2024-11-28,files/research_paper.pdf
+3,MeetingMinutes,Michael Brown,Minutes,2024-12-03,files/meeting_minutes.docx
+4,TechnicalReport,Susan Lee,Report,2024-12-05,files/technical_report.pdf
+5,PresentationSlides,David Green,Presentation,2024-12-07,files/presentation.pptx

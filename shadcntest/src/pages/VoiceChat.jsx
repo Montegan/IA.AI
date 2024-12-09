@@ -5,6 +5,9 @@ import { Avatar } from "../components/ui/avatar";
 import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import { BsChatLeftTextFill } from "react-icons/bs";
+import { MdEmail } from "react-icons/md";
+import { FaPodcast } from "react-icons/fa6";
+
 function VoiceChat() {
   const [status, setStatus] = useState("");
   const [clicked, setClicked] = useState(false);
@@ -21,13 +24,23 @@ function VoiceChat() {
   const navigate = useNavigate();
   return (
     <div className="bg-[#00416B] relative h-[100vh] flex flex-col p-3 justify-start items-center  ">
-      <div
-        className="cursor-pointer absolute mt-5 ml-4 text-[#7d7d7d] self-start"
-        onClick={() => {
-          navigate("/ChatBot");
-        }}
-      >
-        <BsChatLeftTextFill size="30" />
+      <div className="relative min-h-[35px] flex gap-16 items-center w-full">
+        <BsChatLeftTextFill
+          className="text-[#b0b0b0] hover:text-[#d4d4d4]"
+          size={23}
+          onClick={() => navigate("/ChatBot")}
+        />
+
+        <MdEmail
+          className="text-[#b0b0b0] hover:text-[#d4d4d4]"
+          size={23}
+          onClick={() => navigate("/emailBot")}
+        />
+        <FaPodcast
+          className="text-[#b0b0b0] hover:text-[#d4d4d4]"
+          size={23}
+          onClick={() => navigate("/podcast")}
+        />
       </div>
 
       <h1 className="text-[3rem] font-bold text-[#BC955c] mt-[50px]">
