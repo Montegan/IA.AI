@@ -20,3 +20,4 @@ python-pptx
 unstructured
 python-docx
 pandas
+google-cloud-texttospeech

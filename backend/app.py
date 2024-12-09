@@ -339,11 +339,14 @@ def create_email():
 
 @app.route('/sendmail', methods=['POST'])
 def send_email():
-    data = request.get_json()  # Get the JSON payload
-    final_email = data.get('final_email')  # Extract the email body
+    # Get the JSON payload
+    final_email = request.form.get(
+        'final_email').strip()  # Extract the email body
     # Extract the subject
-    mail_subject = data.get('subject').strip()
-    reciever_address = data.get('reciver').strip()
+    mail_subject = request.form.get('subject').strip()
+    reciever_address = request.form.get('reciver').strip()
+    attached_file = request.files.get('file')
+    print(attached_file)
     print(reciever_address)
 
     if not mail_subject:  # Fallback subject if none is provided

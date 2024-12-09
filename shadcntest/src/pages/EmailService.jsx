@@ -15,6 +15,7 @@ const EmailService = () => {
   const [sentAlert, setAlert] = useState("");
   const [subject, setSubject] = useState("");
   const [reciverAddress, setreciverAddress] = useState("");
+  const [attachement, setAttachment] = useState("");
 
   const generateComment = async () => {
     const response = await axios.get(" http://127.0.0.1:5000/originalComment");
@@ -44,13 +45,26 @@ const EmailService = () => {
     console.log(email);
     console.log(subject);
     console.log(reciverAddress);
-    const response = await axios.post("http://127.0.0.1:5000/sendmail", {
-      final_email: email,
-      subject: subject,
-      reciver: reciverAddress,
-    });
+    const formData = new FormData();
+    formData.append("file", attachement);
+    formData.append("final_email", email);
+    formData.append("subject", subject);
+    formData.append("reciver", reciverAddress);
+
+    const response = await axios.post(
+      "http://127.0.0.1:5000/sendmail",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     setAlert(response.data);
   };
+
+  const handleAttachement = async () => {};
+
   return (
     <div className="text-white bg-black flex flex-col items-center h-[100vh] gap-6 w-full pt-6 px-4">
       <div className="relative min-h-[35px] flex gap-16 items-center w-full">
@@ -185,12 +199,18 @@ const EmailService = () => {
                   console.log(e.target.value);
                 }}
               ></textarea>
-              <button
-                onClick={sendEmail}
-                className="bg-green-500 self-center hover:bg-green-400 active:bg-green-600 p-[8px] text-black text-lg font-bold w-[25vw] rounded-md"
-              >
-                Send Email
-              </button>
+              <div>
+                <input
+                  type="file"
+                  onChange={(e) => setAttachment(e.target.files[0])}
+                />
+                <button
+                  onClick={sendEmail}
+                  className="bg-green-500 self-center hover:bg-green-400 active:bg-green-600 p-[8px] text-black text-lg font-bold w-[25vw] rounded-md"
+                >
+                  Send Email
+                </button>
+              </div>
             </div>
           </div>
         </div>
