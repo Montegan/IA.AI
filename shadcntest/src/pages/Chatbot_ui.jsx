@@ -341,7 +341,11 @@ const Chatbot_ui = ({ user, loading, error }) => {
 
                 <Card className="relative h-[90vh] w-[73vw] overflow-y-scroll overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] rounded-none flex flex-col   gap-10 bg-[#212121] border-none">
                   {tabs.length > 0 && currentTab != "" ? (
-                    messages.map((items) => <Message_load items={items} />)
+                    messages.map((items) => (
+                      <>
+                        <Message_load items={items} />
+                      </>
+                    ))
                   ) : (
                     <Button
                       id="button1"
@@ -351,7 +355,6 @@ const Chatbot_ui = ({ user, loading, error }) => {
                       Create New Tab
                     </Button>
                   )}
-
                   <Media_selector
                     setMediaSelector={setMediaSelector}
                     mediaSelector={mediaSelector}

@@ -74,8 +74,16 @@ const Podcast = () => {
 
       {/* Main Content */}
       <div className="flex flex-col items-center text-white py-10 space-y-6">
-        <h1 className="text-3xl font-bold">SFBU Podcast</h1>
-        <p className="text-lg italic opacity-75">{llm_response}</p>
+        <h1 className="text-3xl font-bold">Podcastify</h1>
+        <p
+          className={
+            llm_response
+              ? " fixed top-3 right-[45vw] text-black bg-green-500 p-1 rounded-md "
+              : "hidden"
+          }
+        >
+          {llm_response}
+        </p>
 
         {/* Question Form */}
         <div className="bg-gray-800 p-6 rounded-lg w-[60%]">
@@ -101,12 +109,11 @@ const Podcast = () => {
             ref={audioRef}
           /> */}
           <button
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 w-[100px] h-[45px] rounded-xl font-medium transition duration-200"
+            className="bg-green-500 hover:bg-green-600 text-black px-6 py-3 w-[200px] h-[45px] rounded-xl font-medium "
             onClick={post_message}
           >
-            Submit
+            Generate
           </button>
-
           <button
             className="bg-[#00406b98] hover:bg-[#00416B] w-[100px] h-[45px] rounded-xl"
             onClick={() => {

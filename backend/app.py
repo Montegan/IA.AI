@@ -24,6 +24,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 import warnings
 from flask_cors import CORS
+from Moderations import anti_promptInjection
 from podcaster import google_adui
 from email_service import compose_email
 from openai_assistant import voice_main
@@ -179,23 +180,39 @@ def ask_chatgpt():
 
 def rag_endpoint(question, currentuser, currentTab, language):
     print(language)
-    try:
-        system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. give detailed answer.If you don't know the answer,just say you don't know in a respectfull manner. The answer should be in language :{language}. 
-Context: {context}
-Answer:"""
+    response = anti_promptInjection(question)
+    if response == "N":
+        try:
+            system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. give detailed answer.If you don't know the answer,just say you don't know in a respectfull manner. The answer should be in language :{language}. 
+                                Context: {context} Answer:"""
 
-        main_prompt = ChatPromptTemplate.from_messages(
-            [("system", system_prompt), ("user", "{question}")])
-        retriver = vector_store.as_retriever(search_kwargs={"k": 4})
-        string_parser = StrOutputParser()
+            main_prompt = ChatPromptTemplate.from_messages(
+                [("system", system_prompt), ("user", "{question}")])
+            retriver = vector_store.as_retriever(search_kwargs={"k": 4})
+            string_parser = StrOutputParser()
 
-        main_chain = {"context": itemgetter("question") | retriver,
-                      "question": itemgetter("question"), "language": itemgetter("language")} | main_prompt | llm
+            main_chain = {"context": itemgetter("question") | retriver,
+                          "question": itemgetter("question"), "language": itemgetter("language")} | main_prompt | llm
 
-        answer = main_chain.invoke(
-            {"question": question, "language": language})
+            answer = main_chain.invoke(
+                {"question": question, "language": language})
 
-        ai_message = answer.content
+            ai_message = answer.content
+            # ['choices'][0]['message']['content'].strip()
+            # ai_message = answer
+            send_ref = db.collection("users", currentuser,
+                                     "tab_id", currentTab, "messages").document()
+            data = {
+                "userId": currentuser,
+                "ai_message": ai_message,
+                "created_at": firestore.SERVER_TIMESTAMP,  # type: ignore
+            }
+            send_ref.set(data)
+            return send_ref.id
+        except requests.exceptions.RequestException as e:
+            return f"Error communicating with OpenAI API: {e}"
+    elif response == "Y":
+        ai_message = "Your input contains potentially malicious content and cannot be processed. Please ensure your input follows safe and appropriate guidelines. If you believe this is an error, please revise your input and try again."
         # ['choices'][0]['message']['content'].strip()
         # ai_message = answer
         send_ref = db.collection("users", currentuser,
@@ -207,10 +224,6 @@ Answer:"""
         }
         send_ref.set(data)
         return send_ref.id
-    except requests.exceptions.RequestException as e:
-        return f"Error communicating with OpenAI API: {e}"
-
-
 # Flask route for the main page
 # @app.route('/')
 # def index():
@@ -348,8 +361,8 @@ def send_email():
     # Extract the subject
     mail_subject = request.form.get('subject').strip()  # type: ignore
     reciever_address = request.form.get('reciver').strip()  # type: ignore
-    attached_file = request.files.get('file')
-    print(attached_file)
+    # attached_file = request.files.get('file')
+    # print(attached_file)
     print(reciever_address)
 
     if not mail_subject:  # Fallback subject if none is provided
@@ -361,6 +374,14 @@ def send_email():
                       # Replace with dynamic or fixed recipient
                       recipients=[reciever_address],
                       body=final_email)
+        attached_file = request.files.get('file')
+        if attached_file:
+            filename = attached_file.filename
+            msg.attach(
+                filename,
+                content_type=attached_file.content_type,
+                data=attached_file.read()
+            )
         mail.send(msg)  # Send the email
         return "Email sent successfully!"
     except Exception as e:
