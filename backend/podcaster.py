@@ -1,6 +1,5 @@
 import os
 from typing import List
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from openai import OpenAI
@@ -10,33 +9,26 @@ from langchain_core.prompts import ChatPromptTemplate
 from google.cloud import texttospeech_v1beta1 as texttospeech
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import ChatOpenAI
-
+from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, powerpoint_embed_documets, excel_embed_documents, csv_embed_documents, text_embed_documents
+from langchain_core.output_parsers import StrOutputParser
+from operator import itemgetter
 
 load_dotenv()
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\H00422003\\Desktop\\SFBU\\2ndsem\\GenAI\\fullstack_rag_sfbu\\complete_rag_app\\google_credentials.json"
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Frontend origin
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 llm = ChatOpenAI()
 
 
-class question_format(BaseModel):
-    question1: str
-    question2: str
+# class question_format(BaseModel):
+#     question1: str
+#     question2: str
 
 
-@app.get("/")
-def main():
-    return ("hello bot from fast")
+# @app.get("/")
+# def main():
+#     return ("hello bot from fast")
 # sample_prompt = "answer should be presented by creating two personas in a podcast studio that are talking answering the users questions as if they"
 # @app.post("/question")
 # def user_question(user_question: question_format):
@@ -125,23 +117,64 @@ class google_parser(BaseModel):
         description=" list of conversations between personas")
 
 
-@app.post("/question")
-def google_adui(user_question: question_format, ):
+def rag_endpoint(question):
+
+    try:
+        system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. give detailed answer.If you don't know the answer,just say you don't know in a respectfull manner.
+         Context: {context}
+         Answer:"""
+
+        main_prompt = ChatPromptTemplate.from_messages(
+            [("system", system_prompt), ("user", "{question}")])
+        retriver = vector_store.as_retriever(search_kwargs={"k": 4})
+        string_parser = StrOutputParser()
+
+        main_chain = {"context": itemgetter("question") | retriver,
+                      "question": itemgetter("question")} | main_prompt | llm
+
+        answer = main_chain.invoke(
+            {"question": question})
+
+        ai_message = answer.content
+        return ai_message
+    except:
+        return f"OpenAI API Limit!"
+    #     return f"Error communicating with OpenAI API: {e}"
+        # ['choices'][0]['message']['content'].strip()
+        # ai_message = answer
+    #     send_ref = db.collection("users", currentuser,
+    #                              "tab_id", currentTab, "messages").document()
+    #     data = {
+    #         "userId": currentuser,
+    #         "ai_message": ai_message,
+    #         "created_at": firestore.SERVER_TIMESTAMP,  # type: ignore
+    #     }
+    #     send_ref.set(data)
+    #     return send_ref.id
+    # except requests.exceptions.RequestException as e:
+    #     return f"Error communicating with OpenAI API: {e}"
+
+
+def google_adui(user_question):
     # Instantiates a client
     client = texttospeech.TextToSpeechClient()
     print(user_question)
-    print(user_question.question1)
     llm_parser = PydanticOutputParser(pydantic_object=google_parser)
     format_instruction = llm_parser.get_format_instructions()
 
-    prompt = ChatPromptTemplate.from_messages([("system", " You are a helpful assistant and an expert in podcast content creation. Your task is to answer user questions in a conversational manner by creating a script featuring two personas, Rachel and Simon, who discuss the topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
-                                              ("user", "what is the difference between {question1} and {question2}")])
+    user_question = rag_endpoint(user_question)
+    print(user_question)
+
+    # prompt = ChatPromptTemplate.from_messages([("system", " You are a helpful assistant and an expert in podcast content creation. Your task is to answer user questions in a conversational manner by creating a script featuring two personas, Rachel and Simon, who discuss the topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
+    #                                           ("user", "{user_question}")])
+    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the any provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
+                                              ("user", "{user_question}")])
 
     # return web_loaders(user_question.question1)
     response = prompt | llm | llm_parser
 
     resutls = response.invoke(
-        {"format_instruction": format_instruction, "question1": user_question.question1, "question2": {user_question.question2}})
+        {"format_instruction": format_instruction, "user_question": user_question})
 
     # print(resutls)
     # for item in resutls:
@@ -191,7 +224,8 @@ def google_adui(user_question: question_format, ):
     )
 
     # The response's audio_content is binary.
-    with open("output.mp3", "wb") as out:
+    with open("podAudio.mp3", "wb") as out:
         # Write the response to the output file.
         out.write(response.audio_content)
-        return ('Audio content written to file "output.mp3"')
+
+        return ('Podcast created!')

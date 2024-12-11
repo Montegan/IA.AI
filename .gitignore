@@ -10,7 +10,7 @@ dist/
 uploads/
 # Tailwind generated files
 *.css.map
-*.css
+
 
 # React
 .DS_Store

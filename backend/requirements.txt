@@ -21,3 +21,4 @@ unstructured
 python-docx
 pandas
 google-cloud-texttospeech
+pygame

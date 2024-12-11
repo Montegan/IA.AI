@@ -24,8 +24,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 import warnings
 from flask_cors import CORS
+from podcaster import google_adui
 from email_service import compose_email
 from openai_assistant import voice_main
+import pygame
 from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, powerpoint_embed_documets, excel_embed_documents, csv_embed_documents, text_embed_documents
 import magic
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -85,7 +87,8 @@ app.config['MAIL_DEFAULT_SENDER'] = appMAIL_DEFAULT_SENDER
 
 # Initialize Flask-Mail
 mail = Mail(app)
-
+sound = None
+pygame.mixer.init()
 
 # Function to load and process the PDF document
 
@@ -341,10 +344,10 @@ def create_email():
 def send_email():
     # Get the JSON payload
     final_email = request.form.get(
-        'final_email').strip()  # Extract the email body
+        'final_email').strip()  # type: ignore # Extract the email body
     # Extract the subject
-    mail_subject = request.form.get('subject').strip()
-    reciever_address = request.form.get('reciver').strip()
+    mail_subject = request.form.get('subject').strip()  # type: ignore
+    reciever_address = request.form.get('reciver').strip()  # type: ignore
     attached_file = request.files.get('file')
     print(attached_file)
     print(reciever_address)
@@ -447,6 +450,37 @@ def voice_to_voice():
     clicked = items.get("clicked")
     voice_main(clicked)
     return jsonify({"Message": "Voice activated"})
+
+
+@app.route('/podcast', methods=['POST'])
+def make_podcast():
+    global sound
+    data = request.get_json()
+    question = data.get("question")
+    print(question)
+    message = google_adui(question)
+    sound = pygame.mixer.Sound("podAudio.mp3")
+    if not message:
+        return jsonify({"Api call max limit reached!"})
+    return jsonify({"message": message})
+
+
+@app.route("/player", methods=['POST'])
+def audio_player():
+    global sound
+    data = request.get_json()
+    state = data.get("status")
+    # audio_file = "output.mp3"  # Replace with your file path
+    if sound:
+        if state:
+            # Play the audio
+            sound.play()
+            return ("playing")
+        else:
+            sound.stop()
+            return ("stoped")
+    else:
+        return ("Credit limit maxed!")
 
 
 if __name__ == "__main__":

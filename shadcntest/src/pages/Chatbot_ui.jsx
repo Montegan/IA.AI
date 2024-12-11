@@ -194,7 +194,7 @@ const Chatbot_ui = ({ user, loading, error }) => {
             <h1>Ecountered error while loging in </h1>
           ) : (
             <>
-              <Card className=" h-[100vh] relative w-[20vw] max-w-[20vw] bg-[#171717] rounded-none items-center border-none overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] flex flex-col gap-2">
+              <Card className=" h-[100vh] relative w-[20vw] max-w-[20vw] bg-[#101010] rounded-none items-center border-none overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] flex flex-col gap-2">
                 <div className="flex w-[20vw] max-w-[20vw] items-center p-2  border-b-[1px] mb-2 gap-3">
                   <Avatar>
                     <AvatarImage src={user?.photoURL} alt="profile" />

@@ -23,7 +23,7 @@ function VoiceChat() {
   const audio_ref = useRef(null);
   const navigate = useNavigate();
   return (
-    <div className="bg-[#00416B] relative h-[100vh] flex flex-col p-3 justify-start items-center  ">
+    <div className="bg-[#000000] relative h-[100vh] flex flex-col p-6 justify-start items-center  ">
       <div className="relative min-h-[35px] flex gap-16 items-center w-full">
         <BsChatLeftTextFill
           className="text-[#b0b0b0] hover:text-[#d4d4d4]"
@@ -61,7 +61,7 @@ function VoiceChat() {
         />
         <AvatarFallback>CN</AvatarFallback>
       </Avatar>
-      <span className="mt-[10px] opacity-45 text-slate-300">
+      <span className="mt-[10px] opacity-45 text-slate-50">
         CLick Logo to speak
       </span>
       {/* <audio

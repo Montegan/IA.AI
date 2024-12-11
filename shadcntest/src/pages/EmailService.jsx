@@ -63,8 +63,6 @@ const EmailService = () => {
     setAlert(response.data);
   };
 
-  const handleAttachement = async () => {};
-
   return (
     <div className="text-white bg-black flex flex-col items-center h-[100vh] gap-6 w-full pt-6 px-4">
       <div className="relative min-h-[35px] flex gap-16 items-center w-full">
