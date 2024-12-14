@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import axios from "axios";
 import { CgWebsite } from "react-icons/cg";
@@ -76,6 +76,15 @@ const Media_selector = ({ mediaSelector, setMediaSelector }) => {
       webResponse && setyoutubeUrl("");
     }
   };
+
+  useEffect(() => {
+    if (UploadStatus !== "") {
+      const timeout = setTimeout(() => {
+        setUploadStatus("");
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [UploadStatus]);
 
   return (
     <>

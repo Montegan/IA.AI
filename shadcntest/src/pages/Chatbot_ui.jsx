@@ -169,19 +169,19 @@ const Chatbot_ui = ({ user, loading, error }) => {
 
     console.log(backendMessage.data.data);
     const recorded_text = backendMessage.data.data;
-    const send_ref = collection(
-      db,
-      "users",
-      currentuser,
-      "tab_id",
-      currentTab,
-      "messages"
-    );
-    await addDoc(send_ref, {
-      userId: currentuser,
-      human_message: recorded_text,
-      created_at: serverTimestamp(),
-    });
+    // const send_ref = collection(
+    //   db,
+    //   "users",
+    //   currentuser,
+    //   "tab_id",
+    //   currentTab,
+    //   "messages"
+    // );
+    // await addDoc(send_ref, {
+    //   userId: currentuser,
+    //   human_message: recorded_text,
+    //   created_at: serverTimestamp(),
+    // });
   };
 
   return (

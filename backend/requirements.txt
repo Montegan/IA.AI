@@ -22,3 +22,8 @@ python-docx
 pandas
 google-cloud-texttospeech
 pygame
+flask_mail
+firebase_admin
+flask_cors
+langchain_chroma
+"git+https://github.com/openai/whisper.git"

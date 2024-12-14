@@ -30,6 +30,7 @@ from email_service import compose_email
 from openai_assistant import voice_main
 import pygame
 from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, powerpoint_embed_documets, excel_embed_documents, csv_embed_documents, text_embed_documents
+from Classification import service_classification
 import magic
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -105,7 +106,6 @@ pygame.mixer.init()
 #     db = DocArrayInMemorySearch.from_documents(docs, embeddings)
 #     retriever = db.as_retriever(
 #         search_type="similarity", search_kwargs={"k": k})
-
 #     global qa
 #     qa = ConversationalRetrievalChain.from_llm(
 #         llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0),
@@ -181,6 +181,8 @@ def ask_chatgpt():
 def rag_endpoint(question, currentuser, currentTab, language):
     print(language)
     response = anti_promptInjection(question)
+    catagory = service_classification(question)
+
     if response == "N":
         try:
             system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. give detailed answer.If you don't know the answer,just say you don't know in a respectfull manner. The answer should be in language :{language}. 
@@ -353,27 +355,70 @@ def create_email():
 #         return str(e)
 
 
+# @app.route('/sendmail', methods=['POST'])
+# def send_email():
+#     # Get the JSON payload
+#     final_email = request.form.get(
+#         'final_email').strip()  # type: ignore # Extract the email body
+#     # Extract the subject
+#     mail_subject = request.form.get('subject').strip()  # type: ignore
+#     reciever_address = request.form.get('reciver').strip()  # type: ignore
+#     # attached_file = request.files.get('file')
+#     # print(attached_file)
+#     print(reciever_address)
+
+#     if not mail_subject:  # Fallback subject if none is provided
+#         mail_subject = "Email from SFBU"
+#     try:
+#         # print(f"{mail_subject}, Email Content: {
+#         #       final_email}")  # Debugging logs
+#         msg = Message(subject=mail_subject,  # Use the subject received from ChatGPT
+#                       # Replace with dynamic or fixed recipient
+#                       recipients=[reciever_address],
+#                       body=final_email)
+#         attached_file = request.files.get('file')
+#         if attached_file:
+#             filename = attached_file.filename
+#             msg.attach(
+#                 filename,
+#                 content_type=attached_file.content_type,
+#                 data=attached_file.read()
+#             )
+#         mail.send(msg)  # Send the email
+#         return "Email sent successfully!"
+#     except Exception as e:
+#         return str(e)  # Return the exception message for debugging
+
+
 @app.route('/sendmail', methods=['POST'])
 def send_email():
     # Get the JSON payload
     final_email = request.form.get(
-        'final_email').strip()  # type: ignore # Extract the email body
+        'final_email').strip()  # Extract the email body
     # Extract the subject
-    mail_subject = request.form.get('subject').strip()  # type: ignore
-    reciever_address = request.form.get('reciver').strip()  # type: ignore
-    # attached_file = request.files.get('file')
-    # print(attached_file)
-    print(reciever_address)
+    mail_subject = request.form.get('subject').strip()
+    reciever_address = request.form.get('reciver', '').strip()
 
     if not mail_subject:  # Fallback subject if none is provided
         mail_subject = "Email from SFBU"
+
+    default_signature = "\n\nBest regards,\nSFBU"
+    body_with_signature = f"{final_email}{default_signature}"
+
     try:
-        # print(f"{mail_subject}, Email Content: {
-        #       final_email}")  # Debugging logs
-        msg = Message(subject=mail_subject,  # Use the subject received from ChatGPT
-                      # Replace with dynamic or fixed recipient
-                      recipients=[reciever_address],
-                      body=final_email)
+        receiver_list = [email.strip()
+                         for email in reciever_address.split(',') if email.strip()]
+
+        if not reciever_address:
+            return "Recipient address is required!", 400
+
+        # Create the email message
+        msg = Message(
+            subject=mail_subject,
+            recipients=receiver_list,  # type: ignore
+            body=body_with_signature
+        )
+
         attached_file = request.files.get('file')
         if attached_file:
             filename = attached_file.filename
@@ -382,10 +427,13 @@ def send_email():
                 content_type=attached_file.content_type,
                 data=attached_file.read()
             )
-        mail.send(msg)  # Send the email
+
+        # Send the email
+        mail.send(msg)
         return "Email sent successfully!"
     except Exception as e:
         return str(e)  # Return the exception message for debugging
+
 
 # Audio recording function
 

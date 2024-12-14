@@ -167,7 +167,7 @@ def google_adui(user_question):
 
     # prompt = ChatPromptTemplate.from_messages([("system", " You are a helpful assistant and an expert in podcast content creation. Your task is to answer user questions in a conversational manner by creating a script featuring two personas, Rachel and Simon, who discuss the topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
     #                                           ("user", "{user_question}")])
-    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the any provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
+    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
                                               ("user", "{user_question}")])
 
     # return web_loaders(user_question.question1)
